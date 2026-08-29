@@ -1,0 +1,4 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+*{box-sizing:border-box} html{background:#0b0d0c} body{margin:0;background:#0b0d0c;color:#f4f4ee;font-family:Arial,sans-serif} ::selection{background:#d8ff3e;color:#0b0d0c}.grain{background-image:radial-gradient(rgba(255,255,255,.11) .6px,transparent .6px);background-size:5px 5px}.outline-text{-webkit-text-stroke:1px #f4f4ee;color:transparent}.pill{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:.55rem .9rem;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase}.marquee{animation:move 18s linear infinite}@keyframes move{to{transform:translateX(-50%)}}.product-image{transition:transform .55s cubic-bezier(.2,.8,.2,1)}.product-card:hover .product-image{transform:scale(1.06)}

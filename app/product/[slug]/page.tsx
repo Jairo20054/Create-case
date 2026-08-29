@@ -1,0 +1,1 @@
+import {ProductDetail} from '@/components/pages'; import {products} from '@/lib/catalog'; import {notFound} from 'next/navigation'; export default async function Page({params}:{params:Promise<{slug:string}>}){const {slug}=await params;const product=products.find(p=>p.slug===slug);if(!product)notFound();return <ProductDetail product={product}/>}
