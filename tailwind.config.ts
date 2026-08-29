@@ -1,2 +1,2 @@
 import type { Config } from 'tailwindcss';
-export default { content: ['./app/**/*.{ts,tsx}','./components/**/*.{ts,tsx}'], theme: { extend: { colors: { acid:'#d8ff3e', ink:'#0b0d0c', mist:'#e9e9e4', chrome:'#b6b9b7' }, fontFamily: { display:['Arial Black','Arial','sans-serif'] } } }, plugins: [] } satisfies Config;
+export default { content: ['./app/**/*.{ts,tsx}','./components/**/*.{ts,tsx}'], theme: { extend: { colors: { ivory:'#f4f0e7', charcoal:'#1a1b19', clay:'#a85f46', sand:'#d7c7ad', stone:'#e6e0d5', muted:'#716f68', acid:'#a85f46', ink:'#1a1b19', mist:'#f4f0e7' }, fontFamily: { display:['Arial Black','Arial','sans-serif'] } } }, plugins: [] } satisfies Config;
