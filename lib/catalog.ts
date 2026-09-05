@@ -1,27 +1,62 @@
-export type Product = {
-  slug: string; name: string; collection: string; price: number; comparePrice?: number; tag?: string;
-  color: string; colors: string[]; models: string[]; design: string; image: string; alt: string;
-  category: 'CASES' | 'SMART' | 'ACCESSORIES'; stock: number; description: string; features: string[];
+export type CatalogDevice = {
+  id: string;
+  name: string;
+  slug: string;
+  modelCode?: string;
+  brand: { id: string; name: string; slug: string };
+  capabilities: string[];
 };
 
-const models = ['iPhone 16 Pro', 'iPhone 16 Pro Max', 'iPhone 15', 'Galaxy S25', 'Galaxy S24', 'Redmi Note 14'];
-export const products: Product[] = [
-  {slug:'chrome-x',name:'Chrome X',collection:'ATELIER 01',price:89900,comparePrice:109900,tag:'BESTSELLER',color:'Plata',colors:['Plata','Negro'],models,design:'Metal líquido',image:'https://images.unsplash.com/photo-1601593346740-925612772716?auto=format&fit=crop&w=1400&q=88',alt:'Case Chrome X color plata',category:'CASES',stock:18,description:'Acabado espejo satinado con una silueta limpia y protección elevada en cámara.',features:['Protección de caída 2 m','Bordes de cámara elevados','Compatible con carga inalámbrica']},
-  {slug:'terra-wave',name:'Terra Wave',collection:'TIERRA',price:69900,tag:'NUEVO',color:'Terracota',colors:['Terracota','Arena','Oliva'],models,design:'Orgánico',image:'https://images.unsplash.com/photo-1603899122634-f086ca5f5ddd?auto=format&fit=crop&w=1400&q=88',alt:'Case Terra Wave terracota',category:'CASES',stock:12,description:'Curvas suaves, tacto mate y tonos inspirados en la tierra colombiana.',features:['Silicona premium','Interior de microfibra','Botones metálicos']},
-  {slug:'mag-stand',name:'Mag Stand',collection:'ESSENTIALS',price:119900,color:'Grafito',colors:['Grafito','Arena'],models,design:'Funcional',image:'https://images.unsplash.com/photo-1623998021446-45cd9b2697a1?auto=format&fit=crop&w=1400&q=88',alt:'Case Mag Stand con soporte',category:'SMART',stock:9,description:'Case magnético con soporte invisible para trabajar, ver contenido o hacer videollamadas.',features:['Anillo MagSafe reforzado','Soporte 360°','Perfil delgado']},
-  {slug:'cali-line',name:'Cali Line',collection:'LOCAL STORIES',price:74900,tag:'EDICIÓN CORTA',color:'Marfil',colors:['Marfil','Terracota'],models,design:'Ilustrado',image:'https://images.unsplash.com/photo-1586953208448-b95a79798f07?auto=format&fit=crop&w=1400&q=88',alt:'Case ilustrado Cali Line',category:'CASES',stock:7,description:'Una interpretación minimalista de Cali: sol, montaña y ritmo en trazos editoriales.',features:['Impresión UV resistente','Acabado mate','Serie numerada']},
-  {slug:'clear-frame',name:'Clear Frame',collection:'ESSENTIALS',price:59900,color:'Transparente',colors:['Transparente','Humo'],models,design:'Minimalista',image:'https://images.unsplash.com/photo-1616330316654-5dcae9c2e4d9?auto=format&fit=crop&w=1400&q=88',alt:'Case transparente Clear Frame',category:'CASES',stock:24,description:'Transparencia de alta claridad con marco reforzado y tratamiento antiamarillamiento.',features:['Tratamiento UV','Esquinas Air Cushion','Marco antideslizante']},
-  {slug:'nfc-note',name:'NFC Note',collection:'CONNECTED',price:129900,tag:'SMART',color:'Negro',colors:['Negro','Oliva'],models,design:'Interactivo',image:'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=1400&q=88',alt:'Case inteligente NFC Note',category:'SMART',stock:5,description:'Comparte tu contacto, portafolio o playlist con un toque. El enlace se puede reprogramar.',features:['Chip NFC reprogramable','Sin batería','Perfil profesional']},
-  {slug:'orbit-wallet',name:'Orbit Wallet',collection:'ESSENTIALS',price:79900,color:'Café',colors:['Café','Negro','Oliva'],models,design:'Utilitario',image:'https://images.unsplash.com/photo-1601593346740-925612772716?auto=format&fit=crop&w=1400&q=82&sat=-40',alt:'Billetera magnética Orbit',category:'ACCESSORIES',stock:16,description:'Billetera magnética compacta para dos tarjetas, terminada en cuero vegano.',features:['Imanes de alta fuerza','Cuero vegano','Protección RFID']},
-  {slug:'aura-strap',name:'Aura Strap',collection:'STYLE OBJECTS',price:44900,color:'Arena',colors:['Arena','Terracota','Negro'],models,design:'Textil',image:'https://images.unsplash.com/photo-1623998021446-45cd9b2697a1?auto=format&fit=crop&w=1400&q=82&sat=-35',alt:'Correa Aura Strap',category:'ACCESSORIES',stock:21,description:'Correa ajustable de tejido suave para llevar el teléfono con libertad.',features:['Longitud ajustable','Herrajes metálicos','Anclaje universal']},
-  {slug:'void-shell',name:'Void Shell',collection:'MONO',price:84900,color:'Negro',colors:['Negro','Grafito'],models,design:'Brutalista',image:'https://images.unsplash.com/photo-1616330316654-5dcae9c2e4d9?auto=format&fit=crop&w=1400&q=82&sat=-100',alt:'Case negro Void Shell',category:'CASES',stock:0,description:'Volúmenes geométricos y negro profundo para una pieza silenciosa pero contundente.',features:['Policarbonato rígido','Agarre lateral','Protección 360°']},
-  {slug:'mirror-wave',name:'Mirror Wave',collection:'ATELIER 01',price:94900,color:'Plata',colors:['Plata','Rosa humo'],models,design:'Escultural',image:'https://images.unsplash.com/photo-1603899122634-f086ca5f5ddd?auto=format&fit=crop&w=1400&q=82&sat=-60',alt:'Case espejo Mirror Wave',category:'CASES',stock:6,description:'Superficie ondulada que transforma la luz y convierte el teléfono en un objeto de diseño.',features:['Acabado cromado','Bordes TPU','Drop limitado']},
-  {slug:'volt-dock',name:'Volt Dock',collection:'DESK OBJECTS',price:139900,color:'Arena',colors:['Arena','Grafito'],models,design:'Industrial',image:'https://images.unsplash.com/photo-1586953208448-b95a79798f07?auto=format&fit=crop&w=1400&q=82&sat=-35',alt:'Base de carga Volt Dock',category:'ACCESSORIES',stock:11,description:'Base magnética de escritorio con ángulo cómodo y una presencia arquitectónica.',features:['Carga rápida 15 W','Base antideslizante','Cable USB-C incluido']},
-  {slug:'ink-one',name:'Ink One',collection:'CONNECTED',price:279900,tag:'INNOVACIÓN',color:'Grafito',colors:['Grafito'],models:models.slice(0,2),design:'E-Ink',image:'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=1400&q=82&sat=-80',alt:'Case E-Ink Ink One',category:'SMART',stock:4,description:'Pantalla E-Ink personalizable para cambiar el diseño sin consumir batería de forma continua.',features:['Pantalla de bajo consumo','App de personalización','Biblioteca de diseños']},
-];
+export type CatalogVariant = {
+  id: string;
+  sku: string;
+  name?: string;
+  color: string;
+  design?: string;
+  material?: string;
+  price: number;
+  compareAtPrice?: number;
+  imageUrl?: string;
+  availableStock: number;
+  compatibleDeviceIds: string[];
+  compatibleBrandIds: string[];
+  requiredCapabilities: string[];
+};
 
-export const money = (n:number) => new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(n);
+export type Product = {
+  id: string;
+  slug: string;
+  name: string;
+  collection: string;
+  price: number;
+  comparePrice?: number;
+  tag?: string;
+  color: string;
+  colors: string[];
+  models: string[];
+  design: string;
+  image: string;
+  alt: string;
+  category: "CASES" | "SMART" | "ACCESSORIES";
+  productType: string;
+  compatibilityMode: "UNIVERSAL" | "BRAND_SPECIFIC" | "DEVICE_SPECIFIC";
+  isDemo: boolean;
+  stock: number;
+  description: string;
+  features: string[];
+  variants: CatalogVariant[];
+};
+
+export type CatalogResponse = { products: Product[]; devices: CatalogDevice[] };
+
+export const money = (value: number) =>
+  new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+  }).format(value);
+
 export const drops = [
-  {slug:'atelier-01',number:'001',name:'ATELIER 01',line:'Metal, reflejo y forma.',date:'2026-09-18',image:products[0].image},
-  {slug:'tierra',number:'002',name:'TIERRA',line:'Color sereno. Tacto real.',date:'2026-10-04',image:products[1].image},
+  { slug: "atelier-01", number: "001", name: "ATELIER 01", line: "Metal, reflejo y forma.", date: "2026-09-18", image: "https://images.unsplash.com/photo-1601593346740-925612772716?auto=format&fit=crop&w=1400&q=88" },
+  { slug: "tierra", number: "002", name: "TIERRA", line: "Color sereno. Tacto real.", date: "2026-10-04", image: "https://images.unsplash.com/photo-1603899122634-f086ca5f5ddd?auto=format&fit=crop&w=1400&q=88" },
 ];
