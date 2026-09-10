@@ -1,1 +1,39 @@
-'use client'; import {Nav} from '@/components/storefront'; import {useState} from 'react'; import {Upload,Sparkles} from 'lucide-react'; export default function Page(){const [step,setStep]=useState(1);return <><Nav/><main className="grid min-h-screen bg-mist pt-24 text-ink md:grid-cols-2"><section className="p-6 md:p-12"><p className="text-xs font-bold tracking-[.2em]">CUSTOM LAB / 01 — 04</p><h1 className="font-display mt-4 text-6xl tracking-tighter md:text-8xl">MAKE IT<br/>YOURS.</h1><div className="mt-12 max-w-md space-y-5">{['Marca y modelo','Base del case','Tu imagen o texto','Revisar diseño'].map((x,i)=><button key={x} onClick={()=>setStep(i+1)} className={`flex w-full items-center justify-between border-b border-black/20 py-4 text-left ${step===i+1?'font-bold':'text-black/45'}`}><span>0{i+1} — {x}</span><span>{step===i+1?'EDITANDO':'+'}</span></button>)}{step===3&&<button className="mt-4 flex w-full justify-center gap-2 border border-dashed border-black/40 p-8 text-sm"><Upload size={18}/> SUBIR FOTOGRAFÍA</button>}<button className="w-full bg-ink p-4 text-xs font-bold tracking-widest text-white">AÑADIR AL CARRITO</button></div></section><section className="relative flex items-center justify-center overflow-hidden bg-[#cfdeca]"><div className="h-[67vh] w-[45%] rounded-[2.3rem] border-[13px] border-ink bg-gradient-to-br from-[#f8efdc] via-[#ff7555] to-[#251f5d] shadow-2xl"><div className="m-5 grid h-[30%] place-items-center border border-white/60 text-center font-display text-3xl">YOUR<br/>SIGNAL</div><div className="mt-[82%] text-center text-[10px] tracking-[.3em]">CUSTOM / {step}</div></div><Sparkles className="absolute right-10 top-12"/></section></main></>}
+'use client';
+import { useEffect, useState } from 'react';
+import { Nav, Footer } from '@/components/storefront';
+import { ProductPhoto } from '@/components/commerce-ui';
+import { useStore } from '@/components/store-provider';
+export default function Page() {
+    const { products } = useStore();
+    const [text, setText] = useState('TU ESTILO.'), [color, setColor] = useState('#171717'), [font, setFont] = useState('sans-serif'), [size, setSize] = useState(32), [rotation, setRotation] = useState(0), [photo, setPhoto] = useState(''), [x, setX] = useState(50), [y, setY] = useState(55), [background, setBackground] = useState('#eeeae3'), [message, setMessage] = useState(''), [base, setBase] = useState('');
+    const product = products.find(p => p.id === base) ?? products.find(p => p.productType === 'CASE' && p.image);
+    useEffect(() => { return () => { if (photo)
+        URL.revokeObjectURL(photo); }; }, [photo]);
+    function save() { const design = { text, color, font, size, rotation, x, y, background, productId: product?.id }; try {
+        localStorage.setItem('alter_studio_design', JSON.stringify(design));
+        setMessage('Composición guardada en este dispositivo. La fotografía debe cargarse de nuevo al abrir el estudio.');
+    }
+    catch {
+        setMessage('No fue posible guardar en este navegador.');
+    } }
+    useEffect(() => { try {
+        const saved = JSON.parse(localStorage.getItem('alter_studio_design') || 'null');
+        if (saved) {
+            setText(saved.text);
+            setColor(saved.color);
+            setFont(saved.font);
+            setSize(saved.size);
+            setRotation(saved.rotation);
+            setX(saved.x);
+            setY(saved.y);
+            setBackground(saved.background);
+            setBase(saved.productId ?? '');
+        }
+    }
+    catch { } }, []);
+    return <><Nav /><main id="main-content" className="page-shell"><p className="eyebrow">ALTER STUDIO / EXPLORA TU IDEA</p><h1 className="page-title">Hazlo tuyo.</h1><p className="muted">Estudio de composición. La fabricación personalizada aún no está habilitada para compra.</p><div className="studio-layout"><section className="filter-controls"><label>Base<select value={product?.id ?? ''} onChange={e => setBase(e.target.value)}><option value="">Seleccionar case</option>{products.filter(p => p.productType === 'CASE' && p.image).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label><label>Tu texto<input maxLength={40} value={text} onChange={e => setText(e.target.value)}/></label><label>Tipografía<select value={font} onChange={e => setFont(e.target.value)}><option value="sans-serif">Moderna</option><option value="serif">Editorial</option><option value="monospace">Técnica</option></select></label><label>Color del texto<input type="color" value={color} onChange={e => setColor(e.target.value)}/></label><label>Fondo<input type="color" value={background} onChange={e => setBackground(e.target.value)}/></label><label>Tamaño<input type="range" min="12" max="60" value={size} onChange={e => setSize(+e.target.value)}/></label><label>Rotación<input type="range" min="-180" max="180" value={rotation} onChange={e => setRotation(+e.target.value)}/></label><label>Posición horizontal<input type="range" min="15" max="85" value={x} onChange={e => setX(+e.target.value)}/></label><label>Posición vertical<input type="range" min="15" max="85" value={y} onChange={e => setY(+e.target.value)}/></label><label>Tu fotografía<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => { const file = e.target.files?.[0]; if (!file)
+        return; if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+        setMessage('Selecciona un JPG, PNG o WebP de máximo 5 MB.');
+        return;
+    } setPhoto(URL.createObjectURL(file)); setMessage(''); }}/></label>{photo && <button className="text-link" onClick={() => setPhoto('')}>Quitar fotografía</button>}<button className="button-dark" onClick={save}>Guardar composición</button>{message && <p role="status">{message}</p>}</section><section className="studio-preview" style={{ background }} aria-label="Vista previa de la composición">{product && <ProductPhoto src={product.image} alt={product.alt}/>}<div className="studio-design" style={{ left: `${x}%`, top: `${y}%`, transform: `translate(-50%,-50%) rotate(${rotation}deg)`, fontFamily: font, fontSize: size, color }}>{photo && <div className="studio-upload"><ProductPhoto src={photo} alt="Tu fotografía"/></div>}<span>{text}</span></div><span className="studio-preview-label">VISTA PREVIA DE COMPOSICIÓN</span></section></div></main><Footer /></>;
+}

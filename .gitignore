@@ -7,3 +7,7 @@ generated/
 *.log
 *.tsbuildinfo
 .vercel/
+
+# Generated dependency directories may be symlinked in local worktrees.
+/node_modules
+/generated

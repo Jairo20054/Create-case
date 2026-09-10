@@ -1,1 +1,10 @@
-export default [{ignores:['.next/**','node_modules/**','node_modules.incomplete/**']}];
+import { FlatCompat } from '@eslint/eslintrc';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const compat = new FlatCompat({ baseDirectory: dirname(fileURLToPath(import.meta.url)) });
+const config = [
+  { ignores:['.next/**','next-env.d.ts','generated/**','node_modules/**','node_modules.incomplete/**'] },
+  ...compat.extends('next/core-web-vitals','next/typescript'),
+];
+
+export default config;

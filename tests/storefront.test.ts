@@ -1,0 +1,22 @@
+import { describe, it, expect } from 'vitest';
+import { emptyFilters, filterProducts, isCompatible, colorValue, productHref } from '../lib/storefront-policy';
+import type { CatalogDevice, Product } from '../lib/catalog';
+const device: CatalogDevice = { id: 'device-a', slug: 'phone-a', name: 'Phone A', brand: { id: 'brand-a', slug: 'brand-a', name: 'Brand A' }, capabilities: ['NFC'] };
+const second: CatalogDevice = { ...device, id: 'device-b', slug: 'phone-b', name: 'Phone B', capabilities: [] };
+const product: Product = { id: 'p1', slug: 'case-test', name: 'Case de prueba', collection: 'Pruebas', price: 50, color: 'Negro', colors: ['Negro', 'Azul'], models: ['Phone A', 'Phone B'], design: 'Test', image: '', alt: 'Prueba', category: 'CASES', productType: 'CASE', compatibilityMode: 'DEVICE_SPECIFIC', isDemo: false, stock: 5, description: 'Solo fixture de test', features: ['NFC'], variants: [{ id: 'v1', sku: 'TEST-A', color: 'Negro', material: 'TPU', price: 50, availableStock: 2, compatibleDeviceIds: [device.id], compatibleBrandIds: [], requiredCapabilities: ['NFC'] }, { id: 'v2', sku: 'TEST-B', color: 'Azul', material: 'Silicona', price: 100, availableStock: 3, compatibleDeviceIds: [second.id], compatibleBrandIds: [], requiredCapabilities: [] }] };
+const devices = [device, second];
+describe('Storefront filtering and variant identity', () => {
+    it('combines constraints on the same variant, never across variants', () => expect(filterProducts([product], devices, { ...emptyFilters, device: device.id, color: 'Azul' })).toEqual([]));
+    it('combines device, color, material, technology and price', () => expect(filterProducts([product], devices, { ...emptyFilters, device: device.id, color: 'Negro', material: 'TPU', technology: 'NFC', max: '60' })).toHaveLength(1));
+    it('rejects unknown device identifiers', () => expect(filterProducts([product], devices, { ...emptyFilters, device: 'unknown' })).toEqual([]));
+    it('resolves shareable device slugs', () => expect(filterProducts([product], devices, { ...emptyFilters, device: device.slug })[0].variants.map(v => v.id)).toEqual(['v1']));
+    it('checks capabilities for universal accessories', () => expect(isCompatible({ ...product, compatibilityMode: 'UNIVERSAL' }, product.variants[0], second)).toBe(false));
+    it('keeps sold-out compatible items visible unless stock filter is requested', () => { const sold = { ...product, variants: [{ ...product.variants[0], availableStock: 0 }] }; expect(filterProducts([sold], devices, { ...emptyFilters, device: device.id })).toHaveLength(1); expect(filterProducts([sold], devices, { ...emptyFilters, stock: '1' })).toHaveLength(0); });
+    it('does not claim a promotion without a real comparison price', () => expect(filterProducts([product], devices, { ...emptyFilters, offers: '1' })).toHaveLength(0));
+    it('prices filtered products from matching variants', () => expect(filterProducts([product], devices, { ...emptyFilters, color: 'Azul' })[0].price).toBe(100));
+    it('supports accent insensitive searches', () => expect(filterProducts([{ ...product, name: 'Protección' }], devices, { ...emptyFilters, q: 'proteccion' })).toHaveLength(1));
+    it('keeps demos after real inventory regardless of price sorting', () => { const demo = { ...product, id: 'demo', isDemo: true, variants: [{ ...product.variants[0], price: 1 }] }; expect(filterProducts([demo, product], devices, { ...emptyFilters, sort: 'price-asc' }).map(p => p.id)).toEqual(['p1', 'demo']); });
+    it('serializes the variant and exact device in product URLs', () => expect(productHref(product, product.variants[0], device)).toBe('/product/case-test?variant=v1&device=phone-a'));
+    it('does not invent a color for unknown names', () => expect(colorValue('Sunset experimental')).toBeUndefined());
+    it('does not mutate catalog variants while filtering', () => { filterProducts([product], devices, { ...emptyFilters, color: 'Negro' }); expect(product.variants).toHaveLength(2); });
+});
