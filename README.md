@@ -1,30 +1,90 @@
 # ALTER//CASE
 
-E-commerce de tecnología, moda y coleccionismo construido con Next.js, Tailwind, Framer Motion y Supabase.
+E-commerce colombiano de cases y accesorios construido con Next.js 15, TypeScript estricto, Prisma 7 y Supabase Postgres.
 
-## Ejecutar
+## Arquitectura de compatibilidad
+
+- `DeviceBrand` y `Device` registran marcas y modelos exactos.
+- `Product` define `UNIVERSAL`, `BRAND_SPECIFIC` o `DEVICE_SPECIFIC`.
+- `ProductVariantDevice` es la fuente de verdad para compatibilidad física exacta.
+- `ProductVariantBrand` registra compatibilidad por marca a nivel de variante.
+- `Capability`, `DeviceCapability` y `VariantCapabilityRequirement` validan requisitos técnicos. En el MVP se deben cumplir **todos** los requisitos marcados como obligatorios.
+- `Inventory` conserva stock físico en `quantity`; el stock comprable es `quantity - reservedQuantity`.
+- El precio definitivo siempre se lee de `ProductVariant.price` en el servidor.
+- `isDemo` permite excluir ejemplos y siempre ordenar productos reales primero.
+
+La interfaz consulta `/api/catalog/products`; las listas de compatibilidad ya no se guardan en componentes ni en `localStorage`. El carrito invitado puede conservar su presentación localmente, pero cada alta y cada checkout se revalidan en el servidor. Si hay un token Supabase válido, `/api/cart/items` también persiste el elemento en PostgreSQL.
+
+## Desarrollo local
 
 ```bash
-npm install
+npm ci
 cp .env.example .env.local
+npm run prisma:generate
 npm run dev
 ```
 
-Abre `http://localhost:3000`.
+Variables privadas:
 
-## Supabase
+- `DATABASE_URL`: conexión de aplicación para Vercel (Supavisor transaction mode, puerto 6543).
+- `DIRECT_URL`: conexión de migraciones/seed (directa o Supavisor session mode, puerto 5432).
 
-1. Crea un proyecto y configura las variables de `.env.local`.
-2. Ejecuta la migración `supabase/migrations/20260828180000_initial_store.sql` en el SQL Editor o con Supabase CLI.
-3. Crea los proveedores Email y Google en Authentication. Añade las URLs de redirección de local y Vercel.
-4. Los archivos de producto van al bucket público `product-images`; los diseños privados, a `custom-designs/{user_id}/`.
+Nunca exponga estas variables con el prefijo `NEXT_PUBLIC_`. Para el navegador use únicamente una clave publicable de Supabase.
 
-La RLS limita perfiles, favoritos, carrito, diseños y pedidos a su propietario. El rol `admin` se asigna directamente en `profiles` por un administrador seguro.
+## Migraciones seguras
 
-## Despliegue Vercel
+La migración inicial histórica está en `prisma/migrations/20260828180000_initial_store`. La migración de compatibilidad está en `prisma/migrations/20260905000000_compatibility_engine`.
 
-Importa el repositorio GitHub en Vercel, agrega las variables del `.env.example` y usa los valores de producción. No expongas `SUPABASE_SERVICE_ROLE_KEY`; solo puede consumirse desde funciones de servidor. Vercel detecta Next.js automáticamente.
+Antes de producción:
 
-## Estado de la primera versión
+1. Haga un respaldo y ejecute primero en una rama o base de staging.
+2. Revise si la migración inicial ya fue aplicada mediante el SQL Editor de Supabase.
+3. Si ya existe, regístrela una sola vez en Prisma sin volver a ejecutarla:
 
-Incluye home inmersivo, shop con buscador, 30 productos demo, drops, smart cases, custom lab, detalle de producto, checkout visual, cuenta, favoritos, carrito lateral y centro administrativo. Las mutaciones reales de autenticación, carrito, pedidos y administración quedan listas para conectarse a los clientes Supabase usando las tablas y políticas incluidas.
+```bash
+npx prisma migrate resolve --applied 20260828180000_initial_store
+```
+
+4. Aplique la migración pendiente y ejecute el seed:
+
+```bash
+npm run migrate:deploy
+npm run db:seed
+```
+
+En una base completamente nueva no ejecute `migrate resolve`; use directamente `npm run migrate:deploy` para aplicar ambas migraciones.
+
+La migración conserva las columnas históricas `products.price`, `products.category`, `product_variants.phone_model_id` y `product_variants.stock` para permitir revisión y rollback. Después del backfill, el código no las usa como fuente de verdad.
+
+## RLS y Prisma
+
+Las tablas expuestas en `public` mantienen RLS. Las políticas públicas son de solo lectura para catálogo activo y las escrituras administrativas exigen `public.is_admin()`. Prisma usa una conexión exclusivamente del servidor; las rutas vuelven a comprobar autorización, compatibilidad, precio e inventario aunque el cliente manipule la petición. No se usa una clave `service_role` en el navegador ni se desactiva RLS.
+
+## API
+
+- `GET /api/catalog/brands`
+- `GET /api/catalog/devices?brandId=&q=`
+- `GET /api/catalog/products?deviceId=&includeDemo=&productType=&q=`
+- `POST /api/compatibility`
+- `POST /api/cart/items`
+- `POST /api/cart/validate`
+- `GET /api/admin/compatibility` (admin)
+- `POST /api/admin/products` (admin)
+- `PATCH /api/admin/variants/:variantId` (admin)
+
+## Verificación
+
+```bash
+npm run typecheck
+npm test
+npm run lint
+npm run build
+```
+
+Los seeds son idempotentes y pequeños: cinco marcas, ocho dispositivos, ocho capacidades y cuatro productos de demostración con ejemplos de compatibilidad exacta, por marca y universal.
+
+## Rediseño de la tienda
+
+El alcance implementado y los requisitos pendientes para producción se detallan en [REDESIGN-DELIVERY.md](docs/REDESIGN-DELIVERY.md). La auditoría inicial está en [REDESIGN-AUDIT.md](docs/REDESIGN-AUDIT.md).
+
+Validación local: 38 pruebas, TypeScript, ESLint y build aprobados. La vista previa de Vercel del commit de rediseño fue cancelada por la verificación de commits; no se desactivaron controles. La conexión disponible de Supabase todavía no expone un proyecto ALTER-CASE, por lo que no se aplicaron migraciones. El checkout persistente, las integraciones pendientes y las fotografías reales deben completarse antes de producción.

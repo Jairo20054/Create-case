@@ -1,1 +1,6 @@
-import {notFound} from 'next/navigation'; import Image from 'next/image'; import {Nav,ProductGrid,DropClock} from '@/components/storefront'; import {drops,products} from '@/lib/catalog'; export default async function Page({params}:{params:Promise<{slug:string}>}){const {slug}=await params;const d=drops.find(x=>x.slug===slug);if(!d)notFound();return <><Nav/><main><section className="relative flex min-h-[82vh] items-end overflow-hidden p-5 md:p-10"><Image src={d.image} alt={d.name} fill priority className="object-cover opacity-55"/><div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent"/><div className="relative"><p className="text-xs tracking-[.2em] text-acid">DROP {d.number} / LAUNCHING SOON</p><h1 className="font-display mt-3 text-8xl tracking-tighter md:text-[12rem]">{d.name}</h1><p className="mt-3 text-lg">{d.line}</p><div className="mt-8"><DropClock/></div></div></section><section className="px-5 py-20 md:px-10"><h2 className="font-display mb-10 text-5xl">THE DROP</h2><ProductGrid list={products.filter(p=>p.collection===d.name).concat(products.slice(0,4)).slice(0,6)}/></section></main></>}
+import { Collections } from '@/components/collections';
+export default async function Page({ params }: {
+    params: Promise<{
+        slug: string;
+    }>;
+}) { const { slug } = await params; return <Collections slug={slug}/>; }

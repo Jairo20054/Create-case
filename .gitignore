@@ -1,8 +1,13 @@
 node_modules/
-node_modules.incomplete/
 .next/
+generated/
+.env
 .env.local
-.env*.local
-.vercel/
+.env.*.local
 *.log
-package-lock.incomplete.json
+*.tsbuildinfo
+.vercel/
+
+# Generated dependency directories may be symlinked in local worktrees.
+/node_modules
+/generated
