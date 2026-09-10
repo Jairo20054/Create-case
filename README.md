@@ -82,3 +82,9 @@ npm run build
 ```
 
 Los seeds son idempotentes y pequeños: cinco marcas, ocho dispositivos, ocho capacidades y cuatro productos de demostración con ejemplos de compatibilidad exacta, por marca y universal.
+
+## Rediseño de la tienda
+
+El alcance implementado y los requisitos pendientes para producción se detallan en [REDESIGN-DELIVERY.md](docs/REDESIGN-DELIVERY.md). La auditoría inicial está en [REDESIGN-AUDIT.md](docs/REDESIGN-AUDIT.md).
+
+Validación local: 38 pruebas, TypeScript, ESLint y build aprobados. La vista previa de Vercel del commit de rediseño fue cancelada por la verificación de commits; no se desactivaron controles. La conexión disponible de Supabase todavía no expone un proyecto ALTER-CASE, por lo que no se aplicaron migraciones. El checkout persistente, las integraciones pendientes y las fotografías reales deben completarse antes de producción.
