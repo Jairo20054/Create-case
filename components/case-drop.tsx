@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import './case-drop.css';
 import { useEffect, useState, type CSSProperties } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { ProductPhoto } from '@/components/commerce-ui';
@@ -42,7 +43,7 @@ export function CaseDrop({ products }: { products: Product[] }) {
       </div>
       {images.length > 0 && <div className={`case-drop-stage ${play ? 'is-playing' : ''} ${completed ? 'is-complete' : ''}`} aria-hidden="true">
         {images.map((product, index) => (
-          <div className="case-drop-item" key={product.id} style={{ '--drop-index': index, '--drop-rotate': `${[-16, 14, -7, 20, -12, 8][index]}deg` } as CSSProperties}>
+          <div className="case-drop-item" key={product.id} onAnimationEnd={index === 0 ? () => setCompleted(true) : undefined} style={{ '--drop-index': index, '--drop-rotate': `${[-16, 14, -7, 20, -12, 8][index]}deg` } as CSSProperties}>
             <ProductPhoto src={product.image} alt="" sizes="(max-width: 640px) 35vw, 18vw" />
           </div>
         ))}
