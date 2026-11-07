@@ -71,6 +71,7 @@ export function StoreProvider({ children }: {
     const [favorites, setFavorites] = useState<string[]>([]);
     const [revision, setRevision] = useState(0);
     const mutations = useRef(new Set<string>());
+    const pendingOrderKey = useRef<string | null>(null);
     const [products, setProducts] = useState<Product[]>([]);
     const [devices, setDevices] = useState<CatalogDevice[]>([]);
     const [catalogLoading, setCatalogLoading] = useState(true);
@@ -207,24 +208,32 @@ export function StoreProvider({ children }: {
         removeFromCart(id) { setCart(current => current.filter(item => item.id !== id)); },
         clearCart() { setCart([]); },
         async createOrder(details) {
-            const response = await fetch('/api/cart/validate', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ items: cart.map(item => ({ productVariantId: item.productVariantId, deviceId: item.deviceId, quantity: item.qty })) }) });
+            if (!cart.length) throw new Error('Selecciona al menos un producto.');
+            const requestId = pendingOrderKey.current ?? crypto.randomUUID();
+            pendingOrderKey.current = requestId;
+            const response = await fetch('/api/orders', {
+                method: 'POST', headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({
+                    requestId, customer: details.customer, phone: details.phone,
+                    email: details.email, city: details.city, address: details.address,
+                    items: cart.map(item => ({
+                        productVariantId: item.productVariantId,
+                        deviceId: item.deviceId, quantity: item.qty,
+                    })),
+                }),
+            });
             const body = await response.json() as {
-                subtotal?: number;
-                items?: Array<{
-                    variantId: string;
-                    deviceId: string;
-                    unitPrice: number;
-                }>;
-                error?: {
-                    message?: string;
-                };
+                order?: { id: string; orderNumber: string; subtotal: number; createdAt: string; status: string };
+                error?: { message?: string };
             };
-            if (!response.ok || body.subtotal === undefined || !body.items)
-                throw new Error(body.error?.message || 'No fue posible validar el carrito.');
-            const validatedItems = cart.map(item => ({ ...item, price: body.items!.find(valid => valid.variantId === item.productVariantId && valid.deviceId === item.deviceId)?.unitPrice ?? item.price }));
-            const order: StoreOrder = { ...details, id: `AC-${String(Date.now()).slice(-6)}`, createdAt: new Date().toISOString(), total: body.subtotal, status: 'Nuevo', items: validatedItems };
-            setOrders(current => [order, ...current]);
-            setCart([]);
+            if (!response.ok || !body.order)
+                throw new Error(body.error?.message || 'No pudimos registrar el pedido en el servidor.');
+            const order: StoreOrder = {
+                ...details, id: body.order.orderNumber, createdAt: body.order.createdAt,
+                total: body.order.subtotal, status: 'Nuevo', items: cart,
+            };
+            setOrders(current => current.some(item => item.id === order.id) ? current : [order, ...current]);
+            setCart([]); pendingOrderKey.current = null;
             return order;
         },
         updateOrderStatus(id, status) { setOrders(current => current.map(order => order.id === id ? { ...order, status } : order)); },
