@@ -27,6 +27,13 @@ export async function POST(request: Request) {
     const data = orderSchema.parse(await request.json());
     const prisma = getPrisma();
     const orderNumber = 'AC-' + data.requestId;
+    const prior = await prisma.order.findUnique({ where: { orderNumber } });
+    if (prior) {
+      return Response.json({ order: {
+        id: prior.id, orderNumber: prior.orderNumber, subtotal: Number(prior.subtotal),
+        createdAt: prior.createdAt.toISOString(), status: prior.status,
+      } }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+    }
     // Compatibility is resolved by the existing server-side policy, never by product/brand text.
     const validated = await Promise.all(data.items.map(item =>
       validateCartItemCompatibility(item.productVariantId, item.deviceId, item.quantity)));
