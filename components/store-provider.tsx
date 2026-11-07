@@ -71,7 +71,7 @@ export function StoreProvider({ children }: {
     const [favorites, setFavorites] = useState<string[]>([]);
     const [revision, setRevision] = useState(0);
     const mutations = useRef(new Set<string>());
-    const pendingOrderKey = useRef<string | null>(null);
+    const pendingOrderKey = useRef<{ signature: string; id: string } | null>(null);
     const [products, setProducts] = useState<Product[]>([]);
     const [devices, setDevices] = useState<CatalogDevice[]>([]);
     const [catalogLoading, setCatalogLoading] = useState(true);
@@ -209,8 +209,12 @@ export function StoreProvider({ children }: {
         clearCart() { setCart([]); },
         async createOrder(details) {
             if (!cart.length) throw new Error('Selecciona al menos un producto.');
-            const requestId = pendingOrderKey.current ?? crypto.randomUUID();
-            pendingOrderKey.current = requestId;
+            const signature = JSON.stringify({ details, items: cart.map(item => ({
+                variant: item.productVariantId, device: item.deviceId, quantity: item.qty,
+            })) });
+            if (pendingOrderKey.current?.signature !== signature)
+                pendingOrderKey.current = { signature, id: crypto.randomUUID() };
+            const requestId = pendingOrderKey.current.id;
             const response = await fetch('/api/orders', {
                 method: 'POST', headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({
