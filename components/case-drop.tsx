@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import type { Product } from '@/lib/catalog';
 import { ProductPhoto } from './commerce-ui';
+import { caseDropProducts } from '@/lib/case-drop-policy';
 import { productHref } from '@/lib/storefront-policy';
 
 type Phase = 'still' | 'falling' | 'finished';
@@ -15,14 +16,7 @@ type Phase = 'still' | 'falling' | 'finished';
  */
 export function CaseDrop({ products }: { products: Product[] }) {
   const [phase, setPhase] = useState<Phase>('still');
-  const cases = useMemo(() => {
-    const seen = new Set<string>();
-    return products.filter(product => {
-      if (product.isDemo || product.productType !== 'CASE' || !product.image || seen.has(product.image)) return false;
-      seen.add(product.image);
-      return true;
-    }).slice(0, 6);
-  }, [products]);
+  const cases = useMemo(() => caseDropProducts(products), [products]);
 
   useEffect(() => {
     if (!cases.length) return;
