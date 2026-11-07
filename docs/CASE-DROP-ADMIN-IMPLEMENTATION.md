@@ -26,7 +26,7 @@ Basada en `feat/premium-storefront-redesign`. No altera `main` ni despliega a pr
 - Los pedidos creados tienen reserva física; no existe aún expiración automática. El administrador debe cancelar pedidos desistidos para liberar stock.
 - Las imágenes quedan en el bucket `alter-case-products`. Configurar ese bucket como **lectura pública** para fotografías de catálogo; escritura de servicio solo desde servidor y con usuario admin verificado. No guardar secretos del rol de servicio en el cliente.
 - Las secciones Colecciones y Clientes muestran su estado pendiente, sin operaciones de edición simuladas.
-- Se dispone de formulario para alta manual, actualización de precio y stock. Importación CSV/XLSX, reordenamiento de galería, edición integral de compatibilidades, recuperación de pedidos por cliente y auditoría histórica de movimientos siguen pendientes.
+- Se dispone de formulario para alta manual, actualización de precio y stock y carga CSV con plantilla, vista previa, SKU duplicado, actualización/omisión y resultados por fila. XLSX nativo, reordenamiento de galería, edición integral de compatibilidades, recuperación de pedidos por cliente y auditoría histórica de movimientos siguen pendientes.
 - Faltan medidas operativas adicionales para producción: rate limiting distribuido, trazabilidad duradera de acciones administrativas, moderación de datos/retención, antifraude, confirmación de pago, conciliación/caducidad de reservas y revisión RLS.
 
 ## Configuración que debe hacer el propietario ANTES de probar el flujo real
@@ -52,5 +52,5 @@ Los tests nuevos de `tests/alter-case-redesign.test.ts` cubren selección de cas
 ## Antes de merge / producción
 - Confirmar CI y revisión de seguridad; hacer E2E con base staging, dos pedidos concurrentes y simulación de retries.
 - Validar manualmente Chrome Android y Safari iOS, 320/375/390/430/768/1024/1440 CSS px, teclado, zoom al 200% y `prefers-reduced-motion`.
-- Implementar importación masiva CSV/XLSX, galería multiimagen, operaciones CRUD de colecciones/clientes con autorización, controles de carga masiva y prevención de abuso, tabla de movimientos de inventario, notificaciones, políticas y pago verificado.
+- Ampliar carga CSV a XLSX nativo y operaciones masivas transaccionales, galería multiimagen, operaciones CRUD de colecciones/clientes con autorización, controles de carga masiva y prevención de abuso, tabla de movimientos de inventario, notificaciones, políticas y pago verificado.
 - No publicar ni fusionar sin aprobación expresa.
