@@ -1,1 +1,2 @@
-import {SimplePage} from '@/components/utility-page'; export default function Page(){return <SimplePage kind="register"/>}
+import { AuthScreen } from '@/components/auth-screen';
+export default function Page() { return <AuthScreen mode="register" />; }
