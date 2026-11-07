@@ -257,7 +257,17 @@ export function AdminConsole({ section }: { section: AdminSection }) {
       </>}
       {section === 'orders' && <section className="admin-v2-panel"><h2>Pedidos registrados</h2><p className="muted">Se muestran pedidos persistidos en PostgreSQL. Un pedido pendiente no equivale a un pago confirmado.</p>
         <div className="admin-v2-table-wrap"><table><thead><tr><th>Número</th><th>Fecha</th><th>Artículos</th><th>Subtotal</th><th>Estado</th></tr></thead><tbody>
-          {orders.map(order => <tr key={order.id}><td>{order.orderNumber}</td><td>{new Date(order.createdAt).toLocaleDateString('es-CO')}</td><td>{order.itemsCount}</td><td>{money(order.subtotal)}</td><td>{order.status}</td></tr>)}
+          {orders.map(order => <tr key={order.id}><td>{order.orderNumber}</td><td>{new Date(order.createdAt).toLocaleDateString('es-CO')}</td><td>{order.itemsCount}</td><td>{money(order.subtotal)}</td><td><span className="status-tag">{order.status}</span>{({ pending: 'confirmed', confirmed: 'preparing', preparing: 'shipped', shipped: 'delivered' } as Record<string, string>)[order.status] && <>
+            {' '}<button className="action-light" disabled={busy} onClick={() => {
+              const next = ({ pending: 'confirmed', confirmed: 'preparing', preparing: 'shipped', shipped: 'delivered' } as Record<string, string>)[order.status];
+              if (window.confirm(`¿Cambiar el pedido a ${next}? Esto actualizará el inventario cuando corresponda.`))
+                mutate(`/api/admin/orders/${order.id}`, 'PATCH', { status: next });
+            }}>Avanzar</button></>}
+            {['pending', 'confirmed', 'preparing'].includes(order.status) && <>
+              {' '}<button className="action-danger" disabled={busy} onClick={() => {
+                if (window.confirm('¿Cancelar y liberar las unidades reservadas?'))
+                  mutate(`/api/admin/orders/${order.id}`, 'PATCH', { status: 'cancelled' });
+              }}>Cancelar</button></>}</td></tr>)}
         </tbody></table></div>{!orders.length && <p className="muted">No hay pedidos persistidos todavía.</p>}
       </section>}
       {(section === 'collections' || section === 'customers') && <section className="admin-v2-panel"><h2>{section === 'collections' ? 'Colecciones' : 'Clientes'}</h2><p className="muted">Este módulo requiere completar su API y política de permisos antes de habilitar edición. No se muestran datos de prueba como si fueran reales.</p></section>}
