@@ -3,6 +3,44 @@ import { requireAdmin } from "@/lib/server/auth";
 import { getPrisma } from "@/lib/server/prisma";
 import { compatibilityConfigurationError, productCreateSchema } from "@/lib/validation/commerce";
 
+
+export async function GET(request: Request) {
+  try {
+    await requireAdmin(request);
+    const products = await getPrisma().product.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        variants: {
+          orderBy: { createdAt: 'asc' },
+          include: {
+            inventory: true,
+            deviceCompatibility: { select: { deviceId: true } },
+            brandCompatibility: { select: { brandId: true } },
+          },
+        },
+      },
+    });
+    return Response.json({
+      products: products.map(product => ({
+        id: product.id, name: product.name, slug: product.slug, description: product.description,
+        productType: product.productType, compatibilityMode: product.compatibilityMode,
+        isActive: product.isActive, isFeatured: product.isFeatured, isDemo: product.isDemo,
+        variants: product.variants.map(variant => ({
+          id: variant.id, sku: variant.sku, name: variant.name, color: variant.color,
+          price: Number(variant.price), imageUrl: variant.imageUrl,
+          quantity: variant.inventory?.quantity ?? 0,
+          reservedQuantity: variant.inventory?.reservedQuantity ?? 0,
+          lowStockThreshold: variant.inventory?.lowStockThreshold ?? 5,
+          deviceIds: variant.deviceCompatibility.map(item => item.deviceId),
+          brandIds: variant.brandCompatibility.map(item => item.brandId),
+        })),
+      })),
+    }, { headers: { 'Cache-Control': 'private, no-store' } });
+  } catch (error) {
+    return apiError(error);
+  }
+}
+
 export async function POST(request: Request) {
   try {
     await requireAdmin(request);
