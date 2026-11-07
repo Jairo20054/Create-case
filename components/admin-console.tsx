@@ -6,6 +6,7 @@ import { ArrowUpRight, LogOut, Plus, RefreshCw } from 'lucide-react';
 import { money } from '@/lib/catalog';
 import { getBrowserSupabase } from '@/lib/browser/supabase';
 import { useStore } from './store-provider';
+import { AdminCsvImport } from './admin-csv-import';
 
 export type AdminSection = 'overview' | 'products' | 'inventory' | 'orders' | 'customers' | 'collections';
 
@@ -255,7 +256,7 @@ export function AdminConsole({ section }: { section: AdminSection }) {
           {!variants.length && <p className="muted">Todavía no hay productos en la base de datos. Añade el primer case desde este panel.</p>}
         </section>
       </>}
-      {section === 'orders' && <section className="admin-v2-panel"><h2>Pedidos registrados</h2><p className="muted">Se muestran pedidos persistidos en PostgreSQL. Un pedido pendiente no equivale a un pago confirmado.</p>
+      {section === 'inventory' && <AdminCsvImport products={products} devices={devices} onImported={async () => { await reload(); refreshCatalog(); }}/>}\n      {section === 'orders' && <section className="admin-v2-panel"><h2>Pedidos registrados</h2><p className="muted">Se muestran pedidos persistidos en PostgreSQL. Un pedido pendiente no equivale a un pago confirmado.</p>
         <div className="admin-v2-table-wrap"><table><thead><tr><th>Número</th><th>Fecha</th><th>Artículos</th><th>Subtotal</th><th>Estado</th></tr></thead><tbody>
           {orders.map(order => <tr key={order.id}><td>{order.orderNumber}</td><td>{new Date(order.createdAt).toLocaleDateString('es-CO')}</td><td>{order.itemsCount}</td><td>{money(order.subtotal)}</td><td><span className="status-tag">{order.status}</span>{({ pending: 'confirmed', confirmed: 'preparing', preparing: 'shipped', shipped: 'delivered' } as Record<string, string>)[order.status] && <>
             {' '}<button className="action-light" disabled={busy} onClick={() => {
