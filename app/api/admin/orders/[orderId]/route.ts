@@ -3,15 +3,8 @@ import { z } from 'zod';
 import { apiError, AdminValidationError } from '@/lib/server/api-response';
 import { requireAdmin } from '@/lib/server/auth';
 import { getPrisma } from '@/lib/server/prisma';
+import { canChangeOrderStatus, reservationShouldBeReleased } from '@/lib/commerce/order-status';
 
-const transitions: Record<string, string[]> = {
-  pending: ['confirmed', 'cancelled'],
-  confirmed: ['preparing', 'cancelled'],
-  preparing: ['shipped', 'cancelled'],
-  shipped: ['delivered'],
-  delivered: [],
-  cancelled: [],
-};
 const schema = z.object({ status: z.enum(['confirmed', 'preparing', 'shipped', 'delivered', 'cancelled']) }).strict();
 
 export async function PATCH(request: Request, context: { params: Promise<{ orderId: string }> }) {
@@ -28,11 +21,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ order
             include: { items: { select: { variantId: true, quantity: true } } } });
           if (!current) throw new AdminValidationError('ORDER_NOT_FOUND', 'El pedido no existe.');
           if (current.status === status) return current;
-          if (!transitions[current.status]?.includes(status))
+          if (!canChangeOrderStatus(current.status, status))
             throw new AdminValidationError('INVALID_TRANSITION', 'Este cambio de estado no está permitido.');
           // Only newly created AC-UUID orders reserve stock. Historical orders need manual reconciliation.
           const reservedOrder = /^AC-[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(current.orderNumber);
-          if (reservedOrder && (status === 'cancelled' || status === 'shipped')) {
+          if (reservedOrder && reservationShouldBeReleased(current.status, status)) {
             for (const line of current.items) {
               if (!line.variantId) throw new AdminValidationError('MISSING_VARIANT', 'Este pedido necesita conciliación manual.');
               const stock = await tx.inventory.findUnique({ where: { productVariantId: line.variantId } });
