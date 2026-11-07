@@ -1,1 +1,2 @@
-import {SimplePage} from '@/components/utility-page'; export default function Page(){return <SimplePage kind="admin/customers"/>}
+import { AdminConsole } from '@/components/admin-console';
+export default function Page() { return <AdminConsole section="customers" />; }

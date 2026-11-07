@@ -14,6 +14,9 @@ export function apiError(error: unknown) {
   if (error instanceof AuthorizationError) return Response.json({ error: { code: error.status === 403 ? "FORBIDDEN" : "UNAUTHORIZED", message: error.message } }, { status: error.status });
   if (error instanceof AdminValidationError) return Response.json({ error: { code: error.code, message: error.message } }, { status: 400 });
   if (error instanceof ZodError) return Response.json({ error: { code: "VALIDATION_ERROR", message: "Los datos enviados no son válidos.", details: error.flatten() } }, { status: 400 });
+  if (error instanceof Error && error.message === "DATABASE_TARGET_UNVERIFIED") {
+    return Response.json({ error: { code: "DATABASE_TARGET_UNVERIFIED", message: "El proyecto Supabase de ALTER / CASE no está identificado o no coincide con la base configurada." } }, { status: 503 });
+  }
   if (error instanceof Error && error.message === "DATABASE_URL_NOT_CONFIGURED") {
     return Response.json({ error: { code: "DATABASE_NOT_CONFIGURED", message: "El catálogo todavía no está conectado a PostgreSQL." } }, { status: 503 });
   }
