@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import type { Product } from '@/lib/catalog';
 import { ProductPhoto } from './commerce-ui';
@@ -60,7 +60,7 @@ export function CaseDrop({ products }: { products: Product[] }) {
           <Link key={product.id} href={productHref(product)}
             className={`case-drop-piece case-drop-piece-${index + 1}`}
             aria-label={`Ver funda ${product.name}`}
-            style={{ '--drop-order': index } as React.CSSProperties}>
+            style={{ '--drop-order': index } as CSSProperties}>
             <ProductPhoto src={product.image} alt={product.alt || product.name}
               priority={index === 0} sizes="(max-width: 767px) 44vw, 19vw" />
           </Link>
