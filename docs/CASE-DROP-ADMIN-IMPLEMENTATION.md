@@ -31,7 +31,7 @@ Basada en `feat/premium-storefront-redesign`. No altera `main` ni despliega a pr
 
 ## Configuración que debe hacer el propietario ANTES de probar el flujo real
 1. Identificar y crear/conectar la base de datos y el proyecto Supabase **exclusivo de ALTER / CASE**. No usar los proyectos NIDO ni MAESTRO-SEGUIMIENTOS.
-2. En el proyecto correcto, configurar en el entorno de preview: `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (o `NEXT_PUBLIC_SUPABASE_ANON_KEY`) y `SUPABASE_SERVICE_ROLE_KEY`.
+2. En el proyecto correcto, configurar \`ALTER_CASE_SUPABASE_PROJECT_REF\` (ref esperado, obligatorio) y en el entorno de preview: `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (o `NEXT_PUBLIC_SUPABASE_ANON_KEY`) y `SUPABASE_SERVICE_ROLE_KEY`.
 3. Revisar las migraciones Prisma heredadas contra una base de STAGING vacía/compatible; aplicarlas solo allí y comprobar las tablas `products`, `product_variants`, `inventory`, `orders` y `order_items`.
 4. Crear el bucket `alter-case-products` con lectura pública autorizada y restringir escritura a servidor.
 5. Crear un usuario con Supabase Auth y configurar su `Profile` correspondiente con `role=ADMIN` mediante un procedimiento seguro de provisión inicial. No permitir elevación de rol desde el cliente.
@@ -54,3 +54,6 @@ Los tests nuevos de `tests/alter-case-redesign.test.ts` cubren selección de cas
 - Validar manualmente Chrome Android y Safari iOS, 320/375/390/430/768/1024/1440 CSS px, teclado, zoom al 200% y `prefers-reduced-motion`.
 - Ampliar carga CSV a XLSX nativo y operaciones masivas transaccionales, galería multiimagen, operaciones CRUD de colecciones/clientes con autorización, controles de carga masiva y prevención de abuso, tabla de movimientos de inventario, notificaciones, políticas y pago verificado.
 - No publicar ni fusionar sin aprobación expresa.
+
+## Barrera de aislamiento
+`lib/server/prisma.ts` compara el ref aprobado con `NEXT_PUBLIC_SUPABASE_URL` y el hostname/usuario de `DATABASE_URL`. Sin ref o ante cualquier discrepancia, devuelve 503 y no inicia el cliente Prisma. Revisar la configuración antes de hacer pruebas con una base real.
