@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prisma:generate": "prisma generate",
-    "migrate:deploy": "prisma migrate deploy",
-    "db:seed": "prisma db seed",
+    "migrate:deploy": "node scripts/verify-alter-db.cjs && prisma migrate deploy",
+    "db:seed": "node scripts/verify-alter-db.cjs && prisma db seed",
     "postinstall": "prisma generate"
   },
   "dependencies": {
